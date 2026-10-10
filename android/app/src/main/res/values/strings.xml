@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AI Habit Coach</string>
+    <string name="title_activity_main">AI Habit Coach</string>
+    <string name="package_name">com.devpost.aihabitcoach</string>
+    <string name="custom_url_scheme">com.devpost.aihabitcoach</string>
+</resources>

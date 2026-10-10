@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Habit Coach — App Map & Take-Home Guide</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+      background: #090a12;
+      color: #f8fafc;
+    }
+    h1, h2, h3 { color: #f59e0b; }
+    .card {
+      background: #131728;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    code {
+      background: rgba(255, 255, 255, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #10b981;
+      font-size: 14px;
+    }
+    pre {
+      background: #040509;
+      padding: 14px;
+      border-radius: 8px;
+      overflow-x: auto;
+      color: #e2e8f0;
+    }
+    .diagram {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 16px 0;
+    }
+    .box {
+      background: #1e2438;
+      border: 1px solid #6366f1;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+    .arrow { color: #f59e0b; font-size: 18px; }
+  </style>
+</head>
+<body>
+
+  <h1>🎯 AI Habit Coach — App Map & Take-Home Guide</h1>
+  <p>This standalone guide explains how the AI Habit Coach mobile app works across its frontend, Gemini AI pipeline, and native mobile build systems.</p>
+
+  <div class="card">
+    <h2>1. The Architecture at a Glance</h2>
+    <div class="diagram">
+      <div class="box">Mobile App UI<br><small>public/index.html</small></div>
+      <div class="arrow">➔</div>
+      <div class="box">Express Server<br><small>server.js</small></div>
+      <div class="arrow">➔</div>
+      <div class="box">Google Gemini AI<br><small>routes/coach.js</small></div>
+      <div class="arrow">➔</div>
+      <div class="box">Native Stores<br><small>android/ & ios/</small></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. Key Code Stops</h2>
+    <ul>
+      <li><strong>Stop 1 — Mobile UI & Touch Dock:</strong> <code>public/index.html</code> — Contains the responsive 4-tab mobile view, Apple Fitness progress ring, 7-day micro-heatmaps, and bottom sheet drawer.</li>
+      <li><strong>Stop 2 — Gemini Multi-Persona Engine:</strong> <code>routes/coach.js</code> — Handles prompt formatting for Stoic, Tough Love, Hype, and Empathetic personas, with automatic model fallback (<code>gemini-3.5-flash-lite</code>, <code>gemini-3.8-flash</code>).</li>
+      <li><strong>Stop 3 — Store Deployment Packaging:</strong> <code>capacitor.config.json</code> — Configures the native Android Studio (<code>android/</code>) and iOS Xcode (<code>ios/</code>) packages.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>3. A Practice to Reuse</h2>
+    <p>
+      <strong>Plan with thin end-to-end slices:</strong> Rather than spending days building an entire native mobile app before testing, building in vertical slices (core checklist ➔ interactive chimes ➔ AI coaching ➔ native packaging) ensured runnable evidence at every step and bad news arrived early.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>4. How to Run & Build</h2>
+    <pre>
+# Start local mobile web server
+npm install
+node server.js
+
+# Sync with Android Studio for Google Play APK
+npx cap sync
+npx cap open android
+
+# Sync with Xcode for Apple App Store
+npx cap open ios
+    </pre>
+  </div>
+
+</body>
+</html>

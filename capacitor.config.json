@@ -1,0 +1,20 @@
+{
+  "appId": "com.devpost.aihabitcoach",
+  "appName": "AI Habit Coach",
+  "webDir": "public",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#090a12",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#090a12"
+    }
+  }
+}

@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
+  <title>AI Habit Coach</title>
+  
+  <!-- PWA & Mobile Web App Meta -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#090a12" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="HabitCoach" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
+
+  <!-- Fonts & CDN Scripts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg: #090a12;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #161a2e 0%, #090a12 80%);
+      --surface: rgba(22, 26, 44, 0.7);
+      --surface-card: #131728;
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --surface-hover: rgba(33, 38, 64, 0.85);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.25);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.25);
+      --indigo: #6366f1;
+      --indigo-glow: rgba(99, 102, 241, 0.25);
+      --coral: #f43f5e;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --radius-full: 9999px;
+    }
+
+    body {
+      background: var(--bg);
+      background-image: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    .app-viewport {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: transparent;
+      padding-bottom: 84px;
+    }
+
+    /* App Bar */
+    .app-bar {
+      padding: 20px 20px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: rgba(9, 10, 18, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 30;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .brand-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    .app-title-group h1 {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      line-height: 1.2;
+    }
+
+    .app-title-group p {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .app-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-action-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .icon-action-btn:active {
+      transform: scale(0.92);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .screen-content {
+      padding: 16px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Hero Progress Card */
+    .hero-progress-card {
+      background: linear-gradient(135deg, rgba(29, 35, 61, 0.85), rgba(16, 20, 36, 0.85));
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      position: relative;
+    }
+
+    .ring-wrap {
+      position: relative;
+      width: 74px;
+      height: 74px;
+      flex-shrink: 0;
+    }
+
+    .ring-wrap svg {
+      width: 74px;
+      height: 74px;
+      transform: rotate(-90deg);
+    }
+
+    .ring-wrap circle {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+    }
+
+    .ring-bg { stroke: rgba(255, 255, 255, 0.08); }
+    .ring-fg {
+      stroke: var(--emerald);
+      stroke-dasharray: 200;
+      stroke-dashoffset: 200;
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .ring-center-stat {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ring-center-stat span.percent {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .hero-content {
+      flex: 1;
+      padding-left: 16px;
+    }
+
+    .hero-tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      color: var(--accent);
+      margin-bottom: 2px;
+    }
+
+    .hero-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .hero-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Category Filter */
+    .filter-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 18px;
+      scrollbar-width: none;
+    }
+    .filter-scroll::-webkit-scrollbar { display: none; }
+
+    .filter-pill {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      padding: 7px 15px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-pill.active {
+      background: var(--emerald);
+      color: #090a12;
+      border-color: var(--emerald);
+      font-weight: 800;
+      box-shadow: 0 0 14px var(--emerald-glow);
+    }
+
+    /* Habit Cards */
+    .habit-list-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .m-habit-card {
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 15px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .m-habit-card:active {
+      transform: scale(0.985);
+    }
+
+    .m-habit-card.checked {
+      background: rgba(16, 185, 129, 0.08);
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+
+    .m-check-wrap {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-shrink: 0;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .m-check-wrap.checked {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      box-shadow: 0 0 14px var(--emerald-glow);
+      transform: scale(1.05);
+    }
+
+    .m-check-wrap svg {
+      width: 14px;
+      height: 14px;
+      stroke: #090a12;
+      stroke-width: 3.5;
+      display: none;
+    }
+
+    .m-check-wrap.checked svg {
+      display: block;
+    }
+
+    .m-habit-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .m-habit-name-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .m-habit-emoji { font-size: 16px; }
+
+    .m-habit-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .m-habit-card.checked .m-habit-name {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .m-habit-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .m-heatmap {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .m-heat-dot {
+      width: 17px;
+      height: 17px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.35);
+    }
+
+    .m-heat-dot.active {
+      background: var(--emerald);
+      color: #090a12;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+    }
+
+    .m-heat-dot.today {
+      border: 1px solid var(--accent);
+    }
+
+    .m-streak-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .m-streak-tag {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: var(--accent);
+      padding: 4px 9px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .m-btn-delete {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px;
+      opacity: 0.4;
+      transition: all 0.2s;
+    }
+
+    .m-btn-delete:hover {
+      opacity: 1;
+      color: var(--coral);
+    }
+
+    .tab-view {
+      display: none;
+      flex-direction: column;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .tab-view.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* AI Coach Card */
+    .coach-screen-card {
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .persona-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .persona-scroll::-webkit-scrollbar { display: none; }
+
+    .m-persona-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .m-persona-pill.active {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--indigo);
+      color: #c7d2fe;
+      box-shadow: 0 0 12px var(--indigo-glow);
+    }
+
+    .btn-coach-call {
+      width: 100%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 20px var(--indigo-glow);
+      transition: all 0.2s;
+    }
+
+    .btn-coach-call:active {
+      transform: scale(0.98);
+    }
+
+    .chat-bubble {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+      position: relative;
+    }
+
+    .chat-bubble.has-coach {
+      border-color: rgba(99, 102, 241, 0.35);
+      background: linear-gradient(135deg, rgba(25, 30, 52, 0.9), rgba(15, 18, 33, 0.9));
+    }
+
+    .audio-play-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .btn-listen-audio {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .wave-bars {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      height: 12px;
+    }
+    .wave-bar {
+      width: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+      animation: wave 0.8s ease-in-out infinite alternate;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.2s; height: 12px; }
+    .wave-bar:nth-child(3) { animation-delay: 0.4s; height: 8px; }
+    .wave-bar:nth-child(1) { height: 6px; }
+
+    @keyframes wave {
+      0% { height: 4px; }
+      100% { height: 14px; }
+    }
+
+    /* FAB */
+    .fab-btn {
+      position: fixed;
+      bottom: 92px;
+      right: max(20px, calc(50% - 220px));
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #ea580c);
+      color: #090a12;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 24px var(--accent-glow);
+      z-index: 40;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .fab-btn:active {
+      transform: scale(0.9) rotate(90deg);
+    }
+
+    /* Bottom Dock */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 480px;
+      margin: 0 auto;
+      height: 72px;
+      background: rgba(13, 16, 28, 0.94);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-top: 1px solid var(--surface-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 10px;
+      z-index: 45;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+
+    .nav-icon { font-size: 20px; }
+
+    .nav-item.active {
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* Bottom Sheet Modal */
+    .sheet-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 60;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .sheet-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .bottom-sheet {
+      width: 100%;
+      max-width: 480px;
+      background: #141726;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px 28px 0 0;
+      padding: 16px 20px 32px;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.32, 1, 0.23, 1);
+    }
+
+    .sheet-overlay.open .bottom-sheet {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 38px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      margin: 0 auto 16px;
+    }
+
+    .sheet-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sheet-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 12px 14px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .sheet-category-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .sheet-cat-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      padding: 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .sheet-cat-btn.selected {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .sheet-submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), #d97706);
+      color: #090a12;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport">
+
+    <!-- Top App Bar -->
+    <header class="app-bar">
+      <div class="brand-meta">
+        <div class="brand-badge">🎯</div>
+        <div class="app-title-group">
+          <h1>AI Habit Coach</h1>
+          <p id="app-date-subtitle">Today's Focus</p>
+        </div>
+      </div>
+
+      <div class="app-bar-actions">
+        <button class="icon-action-btn" id="btn-sound" title="Toggle Sound">🔔</button>
+      </div>
+    </header>
+
+    <main class="screen-content">
+
+      <!-- TAB 1: TODAY'S HABITS -->
+      <div class="tab-view active" id="tab-today">
+
+        <div class="hero-progress-card">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 74 74">
+              <circle class="ring-bg" cx="37" cy="37" r="32" />
+              <circle class="ring-fg" id="m-ring-circle" cx="37" cy="37" r="32" />
+            </svg>
+            <div class="ring-center-stat">
+              <span class="percent" id="m-ring-percent">0%</span>
+            </div>
+          </div>
+
+          <div class="hero-content">
+            <span class="hero-tag">Today's Target</span>
+            <div class="hero-title" id="m-ring-count">0 of 0 Completed</div>
+            <p class="hero-sub" id="m-ring-status">Build your winning momentum</p>
+          </div>
+        </div>
+
+        <div class="filter-scroll">
+          <button class="filter-pill active" data-filter="all">All Habits</button>
+          <button class="filter-pill" data-filter="Fitness">🏃 Fitness</button>
+          <button class="filter-pill" data-filter="Health">💧 Health</button>
+          <button class="filter-pill" data-filter="Mind">📚 Mind</button>
+          <button class="filter-pill" data-filter="Zen">🧘 Zen</button>
+          <button class="filter-pill" data-filter="Focus">⚡ Focus</button>
+        </div>
+
+        <div class="habit-list-container" id="m-habits-list"></div>
+
+      </div>
+
+      <!-- TAB 2: ANALYTICS & STREAKS -->
+      <div class="tab-view" id="tab-analytics">
+        <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 14px;">Consistency Metrics</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+          <div style="background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: var(--radius-md); padding: 16px;">
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Longest Streak</div>
+            <div style="font-size: 26px; font-weight: 800; color: var(--accent);" id="an-top-streak">0d</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Unbroken days</div>
+          </div>
+
+          <div style="background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: var(--radius-md); padding: 16px;">
+            <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Total Check-ins</div>
+            <div style="font-size: 26px; font-weight: 800; color: var(--emerald);" id="an-total-reps">0</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Lifetime habits logged</div>
+          </div>
+        </div>
+
+        <div style="background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 16px;">
+          <div style="font-size: 14px; font-weight: 800; margin-bottom: 8px;">Weekly Discipline Matrix</div>
+          <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+            Your consistency rate is calculated across all 7 rolling days. Keep every dot glowing green to max out your streak bonus!
+          </p>
+        </div>
+      </div>
+
+      <!-- TAB 3: AI COACH (GEMINI) -->
+      <div class="tab-view" id="tab-coach">
+        <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 12px;">Adaptive AI Coach</h2>
+
+        <div class="coach-screen-card">
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+            Choose Persona
+          </div>
+
+          <div class="persona-scroll">
+            <button class="m-persona-pill active" data-persona="stoic">🧘 Stoic Sage</button>
+            <button class="m-persona-pill" data-persona="tough-love">🎯 Tough Love</button>
+            <button class="m-persona-pill" data-persona="hype">⚡ Hype Coach</button>
+            <button class="m-persona-pill" data-persona="empathetic">🤝 Empathetic</button>
+          </div>
+
+          <button class="btn-coach-call" id="btn-call-coach-m">
+            <span>✨</span> Ask Coach For Guidance
+          </button>
+
+          <div class="chat-bubble" id="m-coach-bubble">
+            Tap "Ask Coach" to receive personalized advice on your actual streaks and habits today.
+          </div>
+
+          <div class="audio-play-bar" id="m-audio-bar" style="display: none;">
+            <button class="btn-listen-audio" id="btn-listen-m">
+              <span>🔊</span> Listen to Coach
+            </button>
+            <div class="wave-bars" id="m-wave-anim" style="display: none;">
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: AI STUDIO / GENERATOR -->
+      <div class="tab-view" id="tab-studio">
+        <h2 style="font-size: 18px; font-weight: 800; margin-bottom: 6px;">AI Habit Generator</h2>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+          Type your desired goal and Gemini will generate 3 customized micro-habits:
+        </p>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+          <input
+            type="text"
+            class="sheet-input"
+            id="studio-goal-input"
+            style="margin-bottom: 0;"
+            placeholder="e.g. Build athletic stamina, study daily…"
+          />
+          <button class="sheet-submit-btn" id="btn-studio-generate" style="width: auto; padding: 0 16px;">
+            Generate
+          </button>
+        </div>
+
+        <div id="studio-suggestions-wrap" style="display: flex; flex-direction: column; gap: 10px;"></div>
+      </div>
+
+    </main>
+
+    <!-- Floating Action Button (FAB) -->
+    <button class="fab-btn" id="btn-fab-add" title="Add Habit">+</button>
+
+    <!-- Bottom Navigation Dock -->
+    <nav class="bottom-nav">
+      <div class="nav-item active" data-tab="tab-today">
+        <span class="nav-icon">📅</span>
+        <span>Today</span>
+      </div>
+      <div class="nav-item" data-tab="tab-analytics">
+        <span class="nav-icon">📊</span>
+        <span>Stats</span>
+      </div>
+      <div class="nav-item" data-tab="tab-coach">
+        <span class="nav-icon">🧠</span>
+        <span>AI Coach</span>
+      </div>
+      <div class="nav-item" data-tab="tab-studio">
+        <span class="nav-icon">✨</span>
+        <span>AI Studio</span>
+      </div>
+    </nav>
+
+    <!-- Bottom Sheet Modal -->
+    <div class="sheet-overlay" id="add-sheet">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title">
+          <span>Create New Habit</span>
+          <span style="font-size: 14px; cursor: pointer; color: var(--text-muted);" id="btn-close-sheet">✕</span>
+        </div>
+
+        <input
+          type="text"
+          class="sheet-input"
+          id="sheet-habit-name"
+          placeholder="Habit Name (e.g. Read 15 Mins, 2L Water…)"
+          maxlength="60"
+        />
+
+        <div class="sheet-category-grid">
+          <button class="sheet-cat-btn selected" data-cat="Fitness" data-emoji="🏃">🏃 Fitness</button>
+          <button class="sheet-cat-btn" data-cat="Health" data-emoji="💧">💧 Health</button>
+          <button class="sheet-cat-btn" data-cat="Mind" data-emoji="📚">📚 Mind</button>
+          <button class="sheet-cat-btn" data-cat="Zen" data-emoji="🧘">🧘 Zen</button>
+          <button class="sheet-cat-btn" data-cat="Focus" data-emoji="⚡">⚡ Focus</button>
+          <button class="sheet-cat-btn" data-cat="General" data-emoji="🎯">🎯 Routine</button>
+        </div>
+
+        <button class="sheet-submit-btn" id="btn-sheet-submit">
+          + Add to My Daily Habits
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+
+    document.getElementById('app-date-subtitle').textContent = new Date().toLocaleDateString('en-US', {
+      weekday: 'long', month: 'short', day: 'numeric'
+    });
+
+    let soundOn = true;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function triggerHaptic() {
+      if (navigator.vibrate) navigator.vibrate([15]);
+    }
+
+    function playBeep(freq, type, dur, gainVal = 0.08) {
+      if (!soundOn) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (e) {}
+    }
+
+    document.getElementById('btn-sound').addEventListener('click', () => {
+      soundOn = !soundOn;
+      document.getElementById('btn-sound').textContent = soundOn ? '🔔' : '🔕';
+      triggerHaptic();
+    });
+
+    let habits = [];
+    let currentFilter = 'all';
+    let selectedCategory = 'Fitness';
+    let selectedEmoji = '🏃';
+    let activePersona = 'stoic';
+    let lastCoachSpeech = '';
+
+    loadHabits();
+
+    async function loadHabits() {
+      try {
+        const res = await fetch('/api/habits');
+        const data = await res.json();
+        habits = data.habits || [];
+        updateHeroMetrics(data.stats);
+        renderHabits();
+      } catch (e) {
+        console.error('Fetch error:', e);
+      }
+    }
+
+    function updateHeroMetrics(stats) {
+      if (!stats) return;
+      const total = stats.totalHabits;
+      const done = stats.completedTodayCount;
+      const rate = stats.completionRate;
+
+      const maxDash = 200;
+      const offset = maxDash - (rate / 100) * maxDash;
+      document.getElementById('m-ring-circle').style.strokeDashoffset = offset;
+      document.getElementById('m-ring-percent').textContent = `${rate}%`;
+      document.getElementById('m-ring-count').textContent = `${done} of ${total} Done`;
+
+      const statusEl = document.getElementById('m-ring-status');
+      if (total === 0) statusEl.textContent = 'Add your first routine';
+      else if (rate === 100) statusEl.textContent = '🔥 100% Complete! Champion!';
+      else if (rate >= 50) statusEl.textContent = 'Past halfway! Keep pushing!';
+      else statusEl.textContent = 'Build your winning momentum';
+
+      document.getElementById('an-top-streak').textContent = `${stats.bestStreak}d`;
+      document.getElementById('an-total-reps').textContent = stats.totalCheckins;
+    }
+
+    function renderHabits() {
+      const container = document.getElementById('m-habits-list');
+      const filtered = currentFilter === 'all'
+        ? habits
+        : habits.filter(h => h.category === currentFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 36px 12px; color: var(--text-muted); background: var(--surface-card); border-radius: var(--radius-md);">
+            <div style="font-size: 32px; margin-bottom: 6px;">🌱</div>
+            <p style="font-size: 13px;">No habits in this category yet. Tap the + button to add one!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(h => {
+        const heatmapDots = (h.last7Days || []).map(day => `
+          <div class="m-heat-dot ${day.completed ? 'active' : ''} ${day.isToday ? 'today' : ''}" title="${day.date}">
+            ${day.dayLabel[0]}
+          </div>
+        `).join('');
+
+        return `
+          <div class="m-habit-card ${h.checkedToday ? 'checked' : ''}" data-id="${h.id}">
+            <div class="m-check-wrap ${h.checkedToday ? 'checked' : ''}">
+              <svg viewBox="0 0 24 24" fill="none">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+
+            <div class="m-habit-details">
+              <div class="m-habit-name-row">
+                <span class="m-habit-emoji">${h.emoji || '🎯'}</span>
+                <span class="m-habit-name">${escapeHtml(h.name)}</span>
+              </div>
+              <div class="m-habit-meta">
+                <div class="m-heatmap">${heatmapDots}</div>
+              </div>
+            </div>
+
+            <div class="m-streak-badge">
+              <div class="m-streak-tag">🔥 ${h.streak}d</div>
+            </div>
+
+            <button class="m-btn-delete" title="Delete">✕</button>
+          </div>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.m-check-wrap').forEach((el, idx) => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleCheck(filtered[idx].id);
+        });
+      });
+
+      container.querySelectorAll('.m-btn-delete').forEach((btn, idx) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteHabit(filtered[idx].id);
+        });
+      });
+    }
+
+    async function toggleCheck(id) {
+      triggerHaptic();
+      playBeep(587.33, 'sine', 0.12);
+      try {
+        const res = await fetch(`/api/habits/${id}/check`, { method: 'POST' });
+        const data = await res.json();
+        habits = habits.map(h => h.id === id ? data.habit : h);
+        updateHeroMetrics(data.stats);
+        renderHabits();
+
+        if (data.habit.checkedToday && data.stats.completionRate === 100) {
+          if (typeof confetti === 'function') {
+            confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
+          }
+          playBeep(880, 'triangle', 0.25, 0.1);
+        }
+      } catch (e) {
+        console.error('Toggle error:', e);
+      }
+    }
+
+    async function addHabit(name, category, emoji) {
+      triggerHaptic();
+      playBeep(440, 'sine', 0.1);
+      try {
+        await fetch('/api/habits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, category, emoji })
+        });
+        await loadHabits();
+      } catch (e) {
+        console.error('Add error:', e);
+      }
+    }
+
+    async function deleteHabit(id) {
+      triggerHaptic();
+      try {
+        await fetch(`/api/habits/${id}`, { method: 'DELETE' });
+        await loadHabits();
+      } catch (e) {
+        console.error('Delete error:', e);
+      }
+    }
+
+    document.querySelectorAll('.filter-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        triggerHaptic();
+        renderHabits();
+      });
+    });
+
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+        item.classList.add('active');
+        document.getElementById(item.dataset.tab).classList.add('active');
+        triggerHaptic();
+      });
+    });
+
+    const sheet = document.getElementById('add-sheet');
+    document.getElementById('btn-fab-add').addEventListener('click', () => {
+      sheet.classList.add('open');
+      triggerHaptic();
+      document.getElementById('sheet-habit-name').focus();
+    });
+
+    document.getElementById('btn-close-sheet').addEventListener('click', () => {
+      sheet.classList.remove('open');
+    });
+
+    sheet.addEventListener('click', (e) => {
+      if (e.target === sheet) sheet.classList.remove('open');
+    });
+
+    document.querySelectorAll('.sheet-cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sheet-cat-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedCategory = btn.dataset.cat;
+        selectedEmoji = btn.dataset.emoji;
+        triggerHaptic();
+      });
+    });
+
+    document.getElementById('btn-sheet-submit').addEventListener('click', () => {
+      const input = document.getElementById('sheet-habit-name');
+      const name = input.value.trim();
+      if (!name) return;
+      addHabit(name, selectedCategory, selectedEmoji);
+      input.value = '';
+      sheet.classList.remove('open');
+    });
+
+    document.querySelectorAll('.m-persona-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.m-persona-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activePersona = btn.dataset.persona;
+        triggerHaptic();
+      });
+    });
+
+    document.getElementById('btn-call-coach-m').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-call-coach-m');
+      const bubble = document.getElementById('m-coach-bubble');
+      const audioBar = document.getElementById('m-audio-bar');
+
+      btn.disabled = true;
+      btn.innerHTML = `<span>⏳</span> Consulting Coach…`;
+      bubble.textContent = 'Analyzing your streaks and daily progress with Gemini…';
+      bubble.classList.remove('has-coach');
+      audioBar.style.display = 'none';
+      triggerHaptic();
+
+      try {
+        const res = await fetch('/api/coach', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ habits, persona: activePersona })
+        });
+        const data = await res.json();
+        if (data.coaching) {
+          lastCoachSpeech = data.coaching;
+          bubble.textContent = data.coaching;
+          bubble.classList.add('has-coach');
+          audioBar.style.display = 'flex';
+          playBeep(784, 'sine', 0.2);
+        } else {
+          throw new Error(data.error || 'Failed');
+        }
+      } catch (err) {
+        bubble.textContent = err.message || 'Could not reach AI Coach. Check connection.';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>✨</span> Ask Coach For Guidance`;
+      }
+    });
+
+    const listenBtn = document.getElementById('btn-listen-m');
+    const waveAnim = document.getElementById('m-wave-anim');
+
+    listenBtn.addEventListener('click', () => {
+      if (!window.speechSynthesis || !lastCoachSpeech) return;
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+        listenBtn.innerHTML = `<span>🔊</span> Listen to Coach`;
+        waveAnim.style.display = 'none';
+        return;
+      }
+
+      const utt = new SpeechSynthesisUtterance(lastCoachSpeech);
+      utt.pitch = activePersona === 'hype' ? 1.15 : activePersona === 'stoic' ? 0.95 : 1.0;
+      utt.onstart = () => {
+        listenBtn.innerHTML = `<span>⏹ Stop</span>`;
+        waveAnim.style.display = 'inline-flex';
+      };
+      utt.onend = () => {
+        listenBtn.innerHTML = `<span>🔊</span> Listen to Coach`;
+        waveAnim.style.display = 'none';
+      };
+      speechSynthesis.speak(utt);
+    });
+
+    document.getElementById('btn-studio-generate').addEventListener('click', async () => {
+      const input = document.getElementById('studio-goal-input');
+      const goal = input.value.trim() || 'Improve discipline and energy';
+      const container = document.getElementById('studio-suggestions-wrap');
+
+      container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted);">Generating suggestions with Gemini…</div>`;
+      triggerHaptic();
+
+      try {
+        const res = await fetch('/api/coach/suggest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ goal })
+        });
+        const data = await res.json();
+        const items = data.suggestions || [];
+
+        container.innerHTML = items.map(item => `
+          <div style="background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: var(--radius-md); padding: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="flex: 1;">
+              <div style="font-size: 14px; font-weight: 700;">${item.emoji || '🎯'} ${escapeHtml(item.name)}</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">${escapeHtml(item.reason || '')}</div>
+            </div>
+            <button class="m-btn-add-suggest" data-name="${escapeHtml(item.name)}" data-cat="${escapeHtml(item.category || 'General')}" data-emoji="${item.emoji || '🎯'}" style="background: var(--emerald); color: #090a12; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 12px; cursor: pointer;">
+              + Add
+            </button>
+          </div>
+        `).join('');
+
+        container.querySelectorAll('.m-btn-add-suggest').forEach(btn => {
+          btn.addEventListener('click', () => {
+            addHabit(btn.dataset.name, btn.dataset.cat, btn.dataset.emoji);
+            btn.textContent = '✓ Added';
+            btn.style.background = '#64748b';
+            btn.disabled = true;
+          });
+        });
+      } catch (e) {
+        container.innerHTML = `<div style="color: var(--coral);">Could not generate suggestions right now.</div>`;
+      }
+    });
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+  </script>
+</body>
+</html>

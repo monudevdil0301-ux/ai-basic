@@ -1,0 +1,22 @@
+{
+  "name": "ai-habit-coach",
+  "version": "2.0.0",
+  "description": "AI-powered mobile habit coach with Gemini AI, 7-day micro-heatmaps, and native Android/iOS store apps",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npx cap open android",
+    "cap:ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.1",
+    "@capacitor/cli": "^7.0.1",
+    "@capacitor/core": "^7.0.1",
+    "@capacitor/ios": "^7.0.1",
+    "@google/genai": "^2.24.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "AI Habit Coach",
+  "short_name": "HabitCoach",
+  "description": "Adaptive habit tracker powered by Google Gemini AI with voice coaching and streak heatmaps.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090a12",
+  "theme_color": "#090a12",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
