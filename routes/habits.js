@@ -13,6 +13,7 @@ const {
   getLast7Days,
   calculateDashboardStats,
   getTodayStr,
+  getDateStr,
 } = require('../utils/streaks');
 
 const DATA_FILE = path.join(__dirname, '..', 'data', 'habits.json');
@@ -85,6 +86,61 @@ router.post('/', (req, res) => {
   data.habits.push(newHabit);
   writeData(data);
   res.status(201).json(enrichHabit(newHabit));
+});
+
+// POST /api/habits/demo — 1-click winning demo state generator for presentations
+router.post('/demo', (req, res) => {
+  const pastDays = (count, skipToday = false) => {
+    const list = [];
+    const start = skipToday ? -1 : 0;
+    for (let i = start; i >= -count; i--) {
+      list.push(getDateStr(i));
+    }
+    return list;
+  };
+
+  const demoHabits = [
+    {
+      id: crypto.randomUUID(),
+      name: 'Morning 5K Run',
+      category: 'Fitness',
+      emoji: '🏃',
+      completedDates: pastDays(12, false),
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'Drink 2.5L Water',
+      category: 'Health',
+      emoji: '💧',
+      completedDates: pastDays(8, false),
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'Read 20 Pages (Atomic Habits)',
+      category: 'Mind',
+      emoji: '📚',
+      completedDates: pastDays(6, true), // pending today
+    },
+    {
+      id: crypto.randomUUID(),
+      name: '10-Minute Zen Meditation',
+      category: 'Zen',
+      emoji: '🧘',
+      completedDates: pastDays(14, false),
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'Deep Work Sprint (45m)',
+      category: 'Focus',
+      emoji: '⚡',
+      completedDates: pastDays(9, true), // pending today
+    },
+  ];
+
+  writeData({ habits: demoHabits });
+  const enriched = demoHabits.map(enrichHabit);
+  const stats = calculateDashboardStats(demoHabits);
+  res.json({ habits: enriched, stats });
 });
 
 // POST /api/habits/:id/check
