@@ -16,34 +16,59 @@ const {
   getDateStr,
 } = require('../utils/streaks');
 
-const DATA_FILE = path.join(__dirname, '..', 'data', 'habits.json');
+const os = require('os');
+const isVercel = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const BUNDLED_FILE = path.join(__dirname, '..', 'data', 'habits.json');
+const DATA_FILE = isVercel
+  ? path.join(os.tmpdir(), 'habits.json')
+  : BUNDLED_FILE;
+
+let memoryCache = null;
 
 function ensureDataFile() {
-  const dir = path.dirname(DATA_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-  if (!fs.existsSync(DATA_FILE)) {
-    fs.writeFileSync(DATA_FILE, JSON.stringify({ habits: [] }, null, 2));
+  if (isVercel) {
+    if (!fs.existsSync(DATA_FILE) && fs.existsSync(BUNDLED_FILE)) {
+      try {
+        fs.copyFileSync(BUNDLED_FILE, DATA_FILE);
+      } catch (e) {
+        // Fallback silently to memory
+      }
+    }
+  } else {
+    const dir = path.dirname(DATA_FILE);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    if (!fs.existsSync(DATA_FILE)) {
+      fs.writeFileSync(DATA_FILE, JSON.stringify({ habits: [] }, null, 2));
+    }
   }
 }
 
 function readData() {
+  if (memoryCache) return memoryCache;
   ensureDataFile();
   try {
-    const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-    return JSON.parse(raw);
+    const filePath = fs.existsSync(DATA_FILE) ? DATA_FILE : BUNDLED_FILE;
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    memoryCache = JSON.parse(raw);
+    return memoryCache;
   } catch (err) {
-    console.error('habits.json reset:', err.message);
+    console.error('habits.json read error:', err.message);
     const empty = { habits: [] };
-    fs.writeFileSync(DATA_FILE, JSON.stringify(empty, null, 2));
+    memoryCache = empty;
     return empty;
   }
 }
 
 function writeData(data) {
-  ensureDataFile();
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  memoryCache = data;
+  try {
+    ensureDataFile();
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.warn('Storage write fallback to memory:', err.message);
+  }
 }
 
 function enrichHabit(habit) {
